@@ -20,7 +20,6 @@ func (t *TestHandler) ServeTFTPReadRequest(w io.WriteCloser, req *Request) error
 	io.Copy(w, f)
 
 	w.Close()
-	log.Println("dfsdfsdf")
 
 	return nil
 }
@@ -39,5 +38,7 @@ func TestServer(t *testing.T) {
 		Addr:    ":1024",
 		Handler: &TestHandler{},
 	}
-	s.ListenAndServe()
+	if err := s.ListenAndServe(); err != nil {
+		t.Error(err)
+	}
 }
