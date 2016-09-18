@@ -386,12 +386,17 @@ func (w *writeRequestReader) Read(p []byte) (int, error) {
 		return 0, err
 	}
 
-	copy(p, buf[4:])
+	data := buf[4:n]
+	if w.mode == ModeNetascii {
+		data = bytes.Replace(data, []byte("\r\n"), []byte("\n"), -1)
+	}
+
+	copy(p, data)
 
 	if n < maxDataPacketSize {
 		w.close()
 	}
-	return n - 4, nil
+	return len(data), nil
 }
 
 func (w *writeRequestReader) close() {

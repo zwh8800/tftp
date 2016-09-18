@@ -28,7 +28,7 @@ func (t *TestHandler) ServeTFTPWriteRequest(r io.Reader, req *Request) error {
 	log.Println(req)
 	var buf bytes.Buffer
 	io.Copy(&buf, r)
-	log.Println("received:", buf.String())
+	log.Println(buf.Len(), " bytes received:", buf.String())
 
 	return nil
 }
