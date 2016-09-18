@@ -25,6 +25,11 @@ const (
 )
 
 const (
+	blockSize         = 512
+	maxDataPacketSize = blockSize + 4
+)
+
+const (
 	errCodeNotDefined uint16 = iota
 	errCodeFileNotFound
 	errCodeAccessViolation
@@ -244,10 +249,24 @@ func (r *readRequestWriter) Write(p []byte) (int, error) {
 		p = bytes.Replace(p, []byte("\r\n"), []byte("\n"), -1)
 		p = bytes.Replace(p, []byte("\n"), []byte("\r\n"), -1)
 	}
-
 	i, n := 0, len(p)
-	for ; n-i > 512; i += 512 {
-		if err := r.writeDataPacket(p[i : i+512]); err != nil {
+	needLen := blockSize - r.buf.Len()
+	if needLen < n {
+		i = needLen
+		r.buf.Write(p[0:i])
+		data := r.buf.Bytes()
+		r.buf.Reset()
+		if err := r.writeDataPacket(data); err != nil {
+			return 0, err
+		}
+
+	} else {
+		i = n
+		r.buf.Write(p[0:i])
+	}
+
+	for ; n-i > blockSize; i += blockSize {
+		if err := r.writeDataPacket(p[i : i+blockSize]); err != nil {
 			return i, err
 		}
 	}
@@ -308,6 +327,7 @@ type writeRequestReader struct {
 	*readWriterBase
 	zeroAckSent bool
 	closed      bool
+	blockNo     uint16
 }
 
 func newWriteRequestReader(s *Server, conn *net.UDPConn, mode string) *writeRequestReader {
@@ -316,6 +336,7 @@ func newWriteRequestReader(s *Server, conn *net.UDPConn, mode string) *writeRequ
 		readWriterBase: base,
 		zeroAckSent:    false,
 		closed:         false,
+		blockNo:        1,
 	}
 }
 
@@ -342,8 +363,7 @@ func (w *writeRequestReader) Read(p []byte) (int, error) {
 		w.zeroAckSent = true
 	}
 
-	// 516 = max TFTP data packet length
-	buf := make([]byte, 516)
+	buf := make([]byte, maxDataPacketSize)
 	n, err := w.conn.Read(buf)
 	if err != nil {
 		w.s.writeErrorPkt(w.conn, nil, ErrNotDefined)
@@ -357,6 +377,12 @@ func (w *writeRequestReader) Read(p []byte) (int, error) {
 		w.close()
 		return 0, errIllegalTFTPOperation
 	}
+	if blockNo != w.blockNo {
+		return 0, nil
+	}
+	w.blockNo++
+
+	time.Sleep(6 * time.Second)
 
 	if err := w.ack(blockNo); err != nil {
 		return 0, err
@@ -364,7 +390,7 @@ func (w *writeRequestReader) Read(p []byte) (int, error) {
 
 	copy(p, buf[4:])
 
-	if n < 516 {
+	if n < maxDataPacketSize {
 		w.close()
 	}
 	return n - 4, nil

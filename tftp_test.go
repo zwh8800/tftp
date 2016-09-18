@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"log"
+	"os"
 	"testing"
 )
 
@@ -12,11 +13,11 @@ type TestHandler struct{}
 func (t *TestHandler) ServeTFTPReadRequest(w io.WriteCloser, req *Request) error {
 	log.Println(req)
 	w.Write([]byte("Hello world\nnihao"))
-	//f, err := os.Open("/Users/zzz/66.go")
-	//if err != nil {
-	//	log.Panic(err)
-	//}
-	//io.Copy(w, f)
+	f, err := os.Open("/Users/zzz/66.go")
+	if err != nil {
+		log.Panic(err)
+	}
+	io.Copy(w, f)
 
 	w.Close()
 
