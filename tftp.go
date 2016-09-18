@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	TFTPModeNetascii = "netascii"
-	TFTPModeOctet    = "octet"
+	ModeNetascii = "netascii"
+	ModeOctet    = "octet"
 )
 
 const (
@@ -142,7 +142,7 @@ func (s *Server) Serve(l *net.UDPConn) error {
 			pos2 += pos1 + 1
 
 			mode := string(buf[pos1+1 : pos2])
-			if mode != TFTPModeNetascii && mode != TFTPModeOctet {
+			if mode != ModeNetascii && mode != ModeOctet {
 				s.writeErrorPkt(l, peerAddr, errUnknownMode)
 				continue
 			}
@@ -195,9 +195,9 @@ func (s *Server) serve(op uint16, peerAddr *net.UDPAddr, req *Request) {
 	}
 
 	if op == opReadRequest {
-		err = s.Handler.ServeTFTPReadRequest(newReadRequestWriter(s, conn), req)
+		err = s.Handler.ServeTFTPReadRequest(newReadRequestWriter(s, conn, req.Mode), req)
 	} else {
-		err = s.Handler.ServeTFTPWriteRequest(newWriteRequestReader(s, conn), req)
+		err = s.Handler.ServeTFTPWriteRequest(newWriteRequestReader(s, conn, req.Mode), req)
 	}
 	if err != nil {
 		tftpErr, ok := err.(*TFTPError)
@@ -214,12 +214,14 @@ func (s *Server) serve(op uint16, peerAddr *net.UDPAddr, req *Request) {
 type readWriterBase struct {
 	conn *net.UDPConn
 	s    *Server
+	mode string
 }
 
-func newReadWriterBase(s *Server, conn *net.UDPConn) *readWriterBase {
+func newReadWriterBase(s *Server, conn *net.UDPConn, mode string) *readWriterBase {
 	return &readWriterBase{
 		conn: conn,
 		s:    s,
+		mode: mode,
 	}
 }
 
@@ -229,8 +231,8 @@ type readRequestWriter struct {
 	blockNo uint16
 }
 
-func newReadRequestWriter(s *Server, conn *net.UDPConn) *readRequestWriter {
-	base := newReadWriterBase(s, conn)
+func newReadRequestWriter(s *Server, conn *net.UDPConn, mode string) *readRequestWriter {
+	base := newReadWriterBase(s, conn, mode)
 	return &readRequestWriter{
 		readWriterBase: base,
 		blockNo:        1,
@@ -238,6 +240,11 @@ func newReadRequestWriter(s *Server, conn *net.UDPConn) *readRequestWriter {
 }
 
 func (r *readRequestWriter) Write(p []byte) (int, error) {
+	if r.mode == ModeNetascii {
+		p = bytes.Replace(p, []byte("\r\n"), []byte("\n"), -1)
+		p = bytes.Replace(p, []byte("\n"), []byte("\r\n"), -1)
+	}
+
 	i, n := 0, len(p)
 	for ; n-i > 512; i += 512 {
 		if err := r.writeDataPacket(p[i : i+512]); err != nil {
@@ -303,8 +310,8 @@ type writeRequestReader struct {
 	closed      bool
 }
 
-func newWriteRequestReader(s *Server, conn *net.UDPConn) *writeRequestReader {
-	base := newReadWriterBase(s, conn)
+func newWriteRequestReader(s *Server, conn *net.UDPConn, mode string) *writeRequestReader {
+	base := newReadWriterBase(s, conn, mode)
 	return &writeRequestReader{
 		readWriterBase: base,
 		zeroAckSent:    false,
