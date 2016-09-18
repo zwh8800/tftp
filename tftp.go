@@ -382,8 +382,6 @@ func (w *writeRequestReader) Read(p []byte) (int, error) {
 	}
 	w.blockNo++
 
-	time.Sleep(6 * time.Second)
-
 	if err := w.ack(blockNo); err != nil {
 		return 0, err
 	}
