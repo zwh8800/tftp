@@ -207,6 +207,7 @@ func (s *Server) serve(op uint16, peerAddr *net.UDPAddr, req *Request) {
 	if err != nil {
 		tftpErr, ok := err.(*TFTPError)
 		if !ok {
+			tftpErr = new(TFTPError)
 			*tftpErr = *ErrNotDefined
 			tftpErr.message = err.Error()
 		}
@@ -245,6 +246,7 @@ func newReadRequestWriter(s *Server, conn *net.UDPConn, mode string) *readReques
 }
 
 func (r *readRequestWriter) Write(p []byte) (int, error) {
+	totalLen := len(p)
 	if r.mode == ModeNetascii {
 		p = bytes.Replace(p, []byte("\r\n"), []byte("\n"), -1)
 		p = bytes.Replace(p, []byte("\n"), []byte("\r\n"), -1)
@@ -272,7 +274,7 @@ func (r *readRequestWriter) Write(p []byte) (int, error) {
 	}
 	r.buf.Write(p[i:n])
 
-	return n, nil
+	return totalLen, nil
 }
 
 func (r *readRequestWriter) Close() error {
