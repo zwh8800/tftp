@@ -33,6 +33,7 @@ tftp.Handle("uboot.bin", someHandler)
 // only handle "read" operation
 tftp.HandleFunc("kernel.bin", func(w io.WriteCloser, req *tftp.Request) error {
     log.Println("incoming read operation for kernel.bin:", req)
+
     f, _ := os.Open("someFileToRead")
     io.Copy(w, f)
     f.Close()   // don't forget close the writer
@@ -41,8 +42,9 @@ tftp.HandleFunc("kernel.bin", func(w io.WriteCloser, req *tftp.Request) error {
 }, nil)
 
 // only handle "write" operation
-tftp.HandleFunc("fs.bin", nil, func(r io.Reader, req *tftp.Request) nil {
+tftp.HandleFunc("fs.bin", nil, func(r io.Reader, req *tftp.Request) error {
     log.Println("incoming write operation for fs.bin:", req)
+
     f, _ := os.Create("someFileToWrite")
     io.Copy(f, r)
 
