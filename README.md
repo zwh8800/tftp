@@ -15,7 +15,7 @@ This package provides TFTP server implementations.
 go get github.com/zwh8800/tftp
 ```
 
-there is no other dependencies except golang standard library.
+There is no other dependencies except golang standard library.
 
 ## Usage:
 
