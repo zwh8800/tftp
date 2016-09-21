@@ -11,7 +11,7 @@ This package provides TFTP server implementations.
 
 ## How to get this package
 
-```
+```bash
 go get github.com/zwh8800/tftp
 ```
 
@@ -25,7 +25,7 @@ there is no other dependencies except golang standard library.
 log.Panic(tftp.ListenAndServe(":1024", tftp.ReadonlyFileServer(http.Dir("/Users/zzz/Downloads"))))
 ```
 
-#### 2. handle some specific path
+#### 2. Handle some specific path
 
 ```go
 tftp.Handle("uboot.bin", someHandler)
@@ -59,7 +59,7 @@ tftp.HandleFunc("fs.secure.bin", nil, func(r io.Reader, req *tftp.Request) nil {
 log.Panic(tftp.ListenAndServe(":1024", nil))
 ```
 
-#### 3. more control
+#### 3. More control
 
 ```go
 server := &tftp.Server{
