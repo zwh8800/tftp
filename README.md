@@ -21,13 +21,13 @@ there is no other dependencies except golang standard library.
 
 #### 1. Start a file server
 
-```golang
+```go
 log.Panic(tftp.ListenAndServe(":1024", tftp.ReadonlyFileServer(http.Dir("/Users/zzz/Downloads"))))
 ```
 
 #### 2. handle some specific path
 
-```golang
+```go
 tftp.Handle("uboot.bin", someHandler)
 
 // only handle "read" operation
@@ -61,7 +61,7 @@ log.Panic(tftp.ListenAndServe(":1024", nil))
 
 #### 3. more control
 
-```golang
+```go
 server := &tftp.Server{
     Addr: ":1234",
     Handler: someHandler,
