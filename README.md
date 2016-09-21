@@ -35,7 +35,7 @@ tftp.HandleFunc("kernel.bin", func(w io.WriteCloser, req *tftp.Request) error {
     log.Println("incoming read operation for kernel.bin:", req)
     f, _ := os.Open("someFileToRead")
     io.Copy(w, f)
-    f.Close()   // important
+    f.Close()   // don't forget close the writer
 
     return nil
 }, nil)
