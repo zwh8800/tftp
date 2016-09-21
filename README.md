@@ -17,7 +17,7 @@ go get github.com/zwh8800/tftp
 
 There is no other dependencies except golang standard library.
 
-## Usage:
+## Usage
 
 #### 1. Start a file server
 
