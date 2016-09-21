@@ -1,4 +1,4 @@
-package tftp
+package tftp_test
 
 import (
 	"bytes"
@@ -6,11 +6,13 @@ import (
 	"log"
 	"os"
 	"testing"
+
+	"github.com/zwh8800/tftp"
 )
 
 type TestHandler struct{}
 
-func (t *TestHandler) ServeTFTPReadRequest(w io.WriteCloser, req *Request) error {
+func (t *TestHandler) ServeTFTPReadRequest(w io.WriteCloser, req *tftp.Request) error {
 	log.Println(req)
 	w.Write([]byte("Hello world\nnihao"))
 	f, err := os.Open("/Users/zzz/66.go")
@@ -24,7 +26,7 @@ func (t *TestHandler) ServeTFTPReadRequest(w io.WriteCloser, req *Request) error
 	return nil
 }
 
-func (t *TestHandler) ServeTFTPWriteRequest(r io.Reader, req *Request) error {
+func (t *TestHandler) ServeTFTPWriteRequest(r io.Reader, req *tftp.Request) error {
 	log.Println(req)
 	var buf bytes.Buffer
 	io.Copy(&buf, r)
@@ -34,7 +36,7 @@ func (t *TestHandler) ServeTFTPWriteRequest(r io.Reader, req *Request) error {
 }
 
 func TestServer(t *testing.T) {
-	s := &Server{
+	s := &tftp.Server{
 		Addr:    ":1024",
 		Handler: &TestHandler{},
 	}
