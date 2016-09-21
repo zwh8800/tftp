@@ -1,6 +1,11 @@
 # TFTP: a golang TFTP implementation
 
----
+[![GoDoc][1]][2] [![MIT licensed][3]][4]
+
+[1]: https://godoc.org/github.com/zwh8800/tftp?status.svg
+[2]: https://godoc.org/github.com/zwh8800/tftp
+[3]: https://img.shields.io/badge/license-MIT-blue.svg
+[4]: LICENSE
 
 This package provides TFTP server implementations.
 
