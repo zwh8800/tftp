@@ -9,6 +9,7 @@ var (
 	}
 )
 
+// return a tftp.Handler that always response file not found error to client
 func NotFoundHandler() Handler {
 	return notFoundHandler
 }
@@ -32,6 +33,7 @@ func (h *funcHandler) ServeTFTPWriteRequest(r io.Reader, req *Request) error {
 	return notFoundHandler.wrqHandler(r, req)
 }
 
+// a dispatcher that dispatch request to registered handler
 type ServeMux struct {
 	handlers map[string]Handler
 }
@@ -40,12 +42,12 @@ func NewServeMux() *ServeMux {
 	return &ServeMux{handlers: make(map[string]Handler)}
 }
 
-// Handle registers the handler for given path
+// registers the handler for given path
 func (mux *ServeMux) Handle(path string, handler Handler) {
 	mux.handlers[path] = handler
 }
 
-// HandleFunc registers the read request handler and write request handler
+// registers the read request handler and write request handler
 // for given path. both rrqHandler and wrqHandler could be nil(NotFoundHandler will be used)
 func (mux *ServeMux) HandleFunc(path string,
 	rrqHandler func(w io.WriteCloser, req *Request) error,
