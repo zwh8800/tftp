@@ -10,6 +10,8 @@ type fileHandler struct {
 	root http.FileSystem
 }
 
+// return a tftp.Handler that response file specified by request.
+// argument fs could be http.Dir
 func ReadonlyFileServer(fs http.FileSystem) Handler {
 	return &fileHandler{root: fs}
 }

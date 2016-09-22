@@ -67,6 +67,7 @@ var (
 	errUnknownMode     = &TFTPError{code: errCodeUnknownMode, message: "unknown mode"}
 )
 
+// request information
 type Request struct {
 	Mode     string
 	Filename string
