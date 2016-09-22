@@ -44,27 +44,27 @@ const (
 	errCodeUnknownMode
 )
 
-type TFTPError struct {
+type tFTPError struct {
 	code    uint16
 	message string
 }
 
-func (e *TFTPError) Error() string {
+func (e *tFTPError) Error() string {
 	return fmt.Sprintf("TFTP error with code %d, message: %s", e.code, e.message)
 }
 
 var (
-	ErrNotDefined           = &TFTPError{code: errCodeNotDefined}
-	ErrFileNotFound         = &TFTPError{code: errCodeFileNotFound, message: "file not found"}
-	ErrAccessViolation      = &TFTPError{code: errCodeAccessViolation, message: "access violation"}
-	ErrDiskFull             = &TFTPError{code: errCodeDiskFull, message: "disk full"}
-	errIllegalTFTPOperation = &TFTPError{code: errCodeIllegalTFTPOperation, message: "illegal TFTP operation"}
-	errUnknownTID           = &TFTPError{code: errCodeUnknownTID, message: "unknown transfer ID"}
-	ErrFileAlreadyExists    = &TFTPError{code: errCodeFileAlreadyExists, message: "file already exists"}
+	ErrNotDefined           = &tFTPError{code: errCodeNotDefined}
+	ErrFileNotFound         = &tFTPError{code: errCodeFileNotFound, message: "file not found"}
+	ErrAccessViolation      = &tFTPError{code: errCodeAccessViolation, message: "access violation"}
+	ErrDiskFull             = &tFTPError{code: errCodeDiskFull, message: "disk full"}
+	errIllegalTFTPOperation = &tFTPError{code: errCodeIllegalTFTPOperation, message: "illegal TFTP operation"}
+	errUnknownTID           = &tFTPError{code: errCodeUnknownTID, message: "unknown transfer ID"}
+	ErrFileAlreadyExists    = &tFTPError{code: errCodeFileAlreadyExists, message: "file already exists"}
 
-	errFileNameTooLong = &TFTPError{code: errCodeFileNameTooLong, message: "file name too long"}
-	errFormatError     = &TFTPError{code: errCodeFormatError, message: "format error"}
-	errUnknownMode     = &TFTPError{code: errCodeUnknownMode, message: "unknown mode"}
+	errFileNameTooLong = &tFTPError{code: errCodeFileNameTooLong, message: "file name too long"}
+	errFormatError     = &tFTPError{code: errCodeFormatError, message: "format error"}
+	errUnknownMode     = &tFTPError{code: errCodeUnknownMode, message: "unknown mode"}
 )
 
 // request information
@@ -90,6 +90,7 @@ type Server struct {
 	ErrorLog *log.Logger
 }
 
+// start tftp server
 func (s *Server) ListenAndServe() error {
 	addr := s.Addr
 	if s.Addr == "" {
@@ -106,6 +107,7 @@ func (s *Server) ListenAndServe() error {
 	return s.Serve(conn)
 }
 
+// start tftp server with specific connection
 func (s *Server) Serve(l *net.UDPConn) error {
 	defer l.Close()
 
@@ -163,7 +165,7 @@ func (s *Server) Serve(l *net.UDPConn) error {
 	}
 }
 
-func (s *Server) writeErrorPkt(conn *net.UDPConn, addr *net.UDPAddr, err *TFTPError) {
+func (s *Server) writeErrorPkt(conn *net.UDPConn, addr *net.UDPAddr, err *tFTPError) {
 	buf := make([]byte, 5+len(err.message))
 	binary.BigEndian.PutUint16(buf[0:2], opError)
 	binary.BigEndian.PutUint16(buf[2:4], err.code)
@@ -206,9 +208,9 @@ func (s *Server) serve(op uint16, peerAddr *net.UDPAddr, req *Request) {
 		err = s.Handler.ServeTFTPWriteRequest(newWriteRequestReader(s, conn, req.Mode), req)
 	}
 	if err != nil {
-		tftpErr, ok := err.(*TFTPError)
+		tftpErr, ok := err.(*tFTPError)
 		if !ok {
-			tftpErr = new(TFTPError)
+			tftpErr = new(tFTPError)
 			*tftpErr = *ErrNotDefined
 			tftpErr.message = err.Error()
 		}

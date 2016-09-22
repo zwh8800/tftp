@@ -39,7 +39,7 @@ func (h *fileHandler) ServeTFTPWriteRequest(r io.Reader, req *Request) error {
 	return ErrAccessViolation
 }
 
-func toTFTPError(err error) *TFTPError {
+func toTFTPError(err error) *tFTPError {
 	if os.IsNotExist(err) {
 		return ErrFileNotFound
 	}
